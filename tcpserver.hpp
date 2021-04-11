@@ -31,7 +31,7 @@ public:
 
 private:
 	unsigned port;
-	SOCKET S; //дескриптор прослушивающего сокета
+	SOCKET S; //РґРµСЃРєСЂРёРїС‚РѕСЂ РїСЂРѕСЃР»СѓС€РёРІР°СЋС‰РµРіРѕ СЃРѕРєРµС‚Р°
 	SOCKET NS;
 	sockaddr_in serv_addr;
 	WSADATA wsadata;
@@ -57,7 +57,7 @@ public:
 	friend class TCPServer;
 
 private:
-	SOCKET S; //сокет клиента
+	SOCKET S; //СЃРѕРєРµС‚ РєР»РёРµРЅС‚Р°
 	sockaddr_in cli_addr;
 	std::string data;
 
