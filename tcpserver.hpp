@@ -36,9 +36,11 @@ private:
 	sockaddr_in serv_addr;
 	WSADATA wsadata;
 	std::function<void(TCPClient&)> callback;
-	std::list<std::shared_ptr<std::thread>> threads;
+	std::list<std::thread> threads;
 	std::list<std::shared_ptr<TCPClient>> clients;
 	std::mutex print_mutex;
+	std::mutex vec_mutex;
+	std::vector<size_t> del;
 
 	void client_loop(std::shared_ptr<TCPClient> client);
 };

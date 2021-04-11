@@ -80,9 +80,30 @@ void TCPServer::start()
         this->print_mutex.unlock();
 
         this->clients.push_back(std::make_shared<TCPClient>(NS, clnt_addr));
-        std::shared_ptr<std::thread> tr{ std::make_shared<std::thread>(&TCPServer::client_loop, this, *std::prev(this->clients.end())) };
-        this->threads.push_back(tr);
-        tr->detach();
+        this->threads.push_back(std::thread(&TCPServer::client_loop, this, *std::prev(this->clients.end())));
+        this->threads.back().detach();
+
+        this->vec_mutex.lock();
+        if (!this->del.empty())
+        {
+            std::sort(this->del.begin(), this->del.end(), std::greater<size_t>());
+
+            for (size_t i = 0; i < this->del.size(); i++)
+            {
+                auto it_c = this->clients.begin();
+                auto it_t = this->threads.begin();
+                for (size_t j = 0; j < this->del[i]; j++)
+                {
+                    it_c++;
+                    it_t++;
+                }
+                this->clients.erase(it_c);
+                this->threads.erase(it_t);
+            }
+            this->del.clear();
+        }
+        this->del.clear();
+        this->vec_mutex.unlock();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
@@ -105,8 +126,22 @@ void TCPServer::client_loop(std::shared_ptr<TCPClient> client)
     }
     // закрываем присоединенный сокет
     this->print_mutex.lock();
-    printf("Client disconnected.\n");
+    printf("Client %s:%d disconnected.\n", inet_ntoa(client->cli_addr.sin_addr), ntohs(client->cli_addr.sin_port));
     this->print_mutex.unlock();
+
+    this->vec_mutex.lock();
+    std::thread::id id{ std::this_thread::get_id() };
+    size_t counter{};
+    for (auto it = this->threads.begin(); it != this->threads.end(); it++, counter++)
+    {
+        if (id == it->get_id())
+            break;
+    }
+    if (counter < this->threads.size())
+    {
+        this->del.push_back(counter);
+    }
+    this->vec_mutex.unlock();
 }
 
 
