@@ -56,7 +56,7 @@ int main()
 				if (words[2] != "HTTP/1.0")
 					throw std::exception("501 Not Implemented");
 
-				if (words[1] == "/")
+				if (words[1] == "/" || words[1] == "/index.html")
 				{
 					std::string answer{ "HTTP/1.0 200 OK\r\n" };
 					std::ifstream file("index.html");
@@ -76,10 +76,19 @@ int main()
 				else if (includes(words[1], "/"))
 				{
 					std::string answer{ "HTTP/1.0 200 OK\r\n" };
-					std::ifstream file(words[1]);
+					std::string f{};
+					for (size_t i = 1; i < words[1].length(); i++)
+					{
+						f.push_back(words[1][i]);
+					}
+					std::ifstream file(f, std::ios::in | std::ios::binary);
 
 					if (!file.is_open())
-						throw std::exception("404 Not Found");
+						throw std::exception("404 Not Found-f");
+
+					char b;
+					file >> b;
+					std::cout << b << std::endl;
 
 					std::string str(std::istreambuf_iterator<char>{file}, {});
 					answer += "Content-Length: " + std::to_string(str.length()) + "\r\n\r\n\r\n";
